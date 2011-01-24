@@ -1,6 +1,6 @@
-(ns scheme.core)
-;;预定义car cdr原语
-
+(ns scheme.core
+  #^{:doc "A simple scheme interpreter in clojure "})
+;;define car cdr
 (def car first)
 (def cdr next)
 (defn cadr [exp] (car (cdr exp)))
@@ -12,7 +12,7 @@
   (if (seq? exp)
       (= (car exp) sym)
       false))
-;;环境
+;;environment
 (def the-empty-environment '())
 
 (defn first-frame [env]
@@ -62,7 +62,7 @@
             (add-binding-to-frame! variable value frame)
             (assoc! frame (keyword (str variable)) value))))
   (scan variable (first-frame env) (enclosing-environment env)))
-
+;;primitive procedure
 (defn primitive-procedure? [p]
   (tagged-list? p 'primitive))
 
@@ -107,16 +107,14 @@
   (apply (primitive-implementation proc) args))
 
 
-;;常量
+;;self evaluting expression
 (defn self-evaluting? [exp]
   (cond 
     (string? exp) true
     (number? exp) true
     :else
     false))
-(defn analyze-self-evaluting [exp]
-  (fn [env] exp))
-;;变量
+;;variable
 (defn variable? [exp]
   (or (symbol? exp) (= true exp) (= false exp)))
 ;;quote
@@ -124,7 +122,7 @@
 (defn text-of-quotation [exp]
   (cadr exp))
 
-;;赋值
+;;assignment by set!
 (defn assignment? [exp]
   (tagged-list? exp 'set!))
 
@@ -143,7 +141,7 @@
 (defn make-lambda [params body]
   (cons 'lambda (cons params body)))
 
-;;定义
+;;definition
 (defn definition? [exp]
   (tagged-list? exp 'define))
 (defn definition-variable [exp]
@@ -154,7 +152,7 @@
   (if (symbol? (cadr exp))
     (caddr exp)
     (make-lambda (cdr (cadr exp)) (cdr (cdr exp)))))
-;;if语句
+;;if form
 (defn if? [exp]  (tagged-list? exp 'if)) 
 (defn if-predicate [exp] (cadr exp))
 (defn if-then [exp] (caddr exp))
@@ -186,7 +184,7 @@
     (last-exp? exps) (first-exp exps)
     :else
     (make-begin exps)))
-;;application
+;;application procedure
 (defn application? [exp]
   (seq? exp))
 (defn operator [exp]
@@ -199,7 +197,7 @@
   (car ops))
 (defn rest-operands [ops]
   (cdr ops))
-;;let?
+;;let form
 (defn let? [exp]
   (tagged-list? exp 'let))
 (defn make-define [variable parameters body]
@@ -216,7 +214,7 @@
           values (map cadr (cadr exp))
           body (caddr exp)]
               (cons (make-lambda variables (list body)) values))))
-;;cond
+;;cond form
 (defn cond? [exp]
   (tagged-list? exp 'cond))
 (defn cond-clauses [exp]
@@ -263,7 +261,7 @@
  (defn procedure-environment [p]
    (cadddr p))
 
-;;analyze procedure
+;;analyze expressions
 (declare analyze)
 
 (defn analyze-self-evaluting [exp]
@@ -318,9 +316,8 @@
     (fn [env]
       (execution-application (fproc env)
         (map #(% env) aprocs)))))
-
-        
-
+;;;Analyze expresssion to lambda      
+;;;
 (defn analyze
   [exp]
   (cond 
@@ -338,14 +335,14 @@
     :else
     (throw (Exception. (str "Unknow expression type" exp)))))
 
-;;eval
+;;eval lambda with environment
 (defn scheme-eval [exp env]
   (try
     ((analyze exp) env)
    (catch Exception e (.getMessage e))))
 
 
-;;解释器
+;;main loop
 (def input-prompt "user=>")
 (def out-prompt "")
 (defn prompt-for-input [s]
@@ -359,6 +356,7 @@
                      (procedure-body object)
                      '<procedure-env>))
       (do (print object) (newline))))
+;;Interpretor main loop
 (defn drive-loop []
   (prompt-for-input input-prompt)
   (let [input (read)]
@@ -366,3 +364,4 @@
       (announce-output out-prompt)
       (user-print output)))
   (recur))
+;;exit
