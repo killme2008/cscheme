@@ -1,5 +1,4 @@
-(ns scheme.core
-  #^{:doc "A simple scheme interpreter in clojure "})
+(ns scheme.core)
 ;;define car cdr
 (def car first)
 (def cdr next)
