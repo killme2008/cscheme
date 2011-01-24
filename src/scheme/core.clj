@@ -83,7 +83,7 @@
         (list '= =)
         (list 'assoc assoc)
         (list 'cadr cadr)
-        (list 'cadr caddr)
+        (list 'caddr caddr)
         (list 'display print)
         (list 'newline newline)
         (list 'map map)))
@@ -332,7 +332,7 @@
     (let? exp) (recur (let->combination exp))
     (application? exp) (analyze-application exp)
     :else
-    (throw (Exception. (str "Unknow expression type" exp)))))
+    (throw (Exception. (str "Unknow expression type " exp)))))
 
 ;;eval lambda with environment
 (defn scheme-eval [exp env]
