@@ -1,13 +1,17 @@
-# scheme
+# cscheme
 
-FIXME: write description
+A simple scheme interpreter in clojure
 
 ## Usage
 
-FIXME: write
+Run src/scheme/core.clj,then type
+
+(drive-loop)
+
+to run interpreter.
 
 ## License
 
-Copyright (C) 2010 FIXME
+Copyright (C) 2010 dennis zhuang [killme2008@gmail.com]
 
 Distributed under the Eclipse Public License, the same as Clojure.
