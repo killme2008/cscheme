@@ -213,6 +213,24 @@
           values (map cadr (cadr exp))
           body (caddr exp)]
               (cons (make-lambda variables (list body)) values))))
+
+;;let* form
+(defn let*? [exp]
+  (tagged-list? exp 'let*))
+(defn make-let [variable value body]
+  (list 'let (list (list variable value)) body))
+(defn let*->let [exp]
+  (defn loop-make-let [variables values body]
+    (if (nil? variables)
+        body
+        (make-let (car variables) (car values) (loop-make-let (cdr variables) (cdr values) body))))
+   (let [variables (map car (cadr exp))
+          values (map cadr (cadr exp))
+          body (caddr exp)]
+        (loop-make-let variables values body)
+     ))
+
+
 ;;cond form
 (defn cond? [exp]
   (tagged-list? exp 'cond))
@@ -330,6 +348,7 @@
     (begin? exp) (analyze-sequence (begin-actions exp))
     (cond? exp) (recur (cond->if exp))
     (let? exp) (recur (let->combination exp))
+    (let*? exp) (recur (let*->let exp))
     (application? exp) (analyze-application exp)
     :else
     (throw (Exception. (str "Unknow expression type " exp)))))
@@ -342,7 +361,7 @@
 
 
 ;;main loop
-(def input-prompt "user=>")
+(def input-prompt "cscheme=>")
 (def out-prompt "")
 (defn prompt-for-input [s]
   (println s))
