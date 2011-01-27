@@ -1,6 +1,6 @@
 # cscheme
 
-A simple scheme interpreter in clojure
+A simple scheme interpreter in clojure from SICP.
 
 ## Usage
 
