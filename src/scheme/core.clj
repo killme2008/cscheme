@@ -22,10 +22,10 @@
 
 (defn make-frame [variables values]
   (let [lists (map list variables values)]
-     (transient (reduce #(assoc %1 (keyword (str (car %2))) (cadr %2)) (hash-map) lists))))
+     (atom (reduce #(assoc %1 (keyword (str (car %2))) (cadr %2)) (hash-map) lists))))
 
 (defn add-binding-to-frame! [variable value frame]
-    (assoc! frame (keyword (str variable)) value))
+    (swap! frame assoc (keyword (str variable)) value))
 
 (defn extend-environment [variables values base-env] 
   (if (= (.size variables) (.size values))
@@ -38,7 +38,7 @@
   (defn scan [variable frame env]
     (if (nil? frame)
       (throw (Exception. (str "Unbound variable " variable)))
-      (let [value ((keyword (str variable)) frame)]
+      (let [value ((keyword (str variable)) @frame)]
         (if (nil? value)
           (recur variable (car env) (enclosing-environment  env))
           value))))
@@ -48,18 +48,18 @@
   (defn scan [variable frame env]
     (if (nil? frame)
       (throw (Exception. (str "Unbound variable " variable)))
-      (let [v ((keyword (str variable)) frame)]
+      (let [v ((keyword (str variable)) @frame)]
         (if (nil? v)
           (recur variable (car env) (enclosing-environment  env))
-          (assoc! frame (keyword (str variable)) value)))))
+          (swap! frame assoc (keyword (str variable)) value)))))
   (scan variable (first-frame env) (enclosing-environment env)))
 
 (defn define-variable! [variable value env]
   (defn scan [variable frame env] 
-      (let [v ((keyword (str variable)) frame)]
+      (let [v ((keyword (str variable)) @frame)]
         (if (nil? v)
             (add-binding-to-frame! variable value frame)
-            (assoc! frame (keyword (str variable)) value))))
+            (swap! frame assoc (keyword (str variable)) value))))
   (scan variable (first-frame env) (enclosing-environment env)))
 ;;primitive procedure
 (defn primitive-procedure? [p]
@@ -383,3 +383,5 @@
       (user-print output)))
   (recur))
 ;;exit
+
+(drive-loop)
